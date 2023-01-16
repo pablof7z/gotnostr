@@ -10,7 +10,7 @@
     }
 
     :global(article) {
-        padding: 1rem !important;
+        padding: 1rem;
     }
 
     :global(.logofont) {

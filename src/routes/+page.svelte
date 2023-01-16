@@ -27,15 +27,19 @@
             <div class="hidden sm:mb-8 sm:flex sm:justify-center">
             </div>
             <div>
-              <h1 class="text-6xl font-bold tracking-tight text-center sm:text-9xl logofont">got nostr?</h1>
-              <p class="mt-6 text-lg leading-8 text-gray-400 text-center sm:text-3xl">The simple way to share your nostr identity</p>
+              <h1 class="text-6xl font-bold tracking-tight text-center sm:text-9xl text-purple-800 logofont">got nostr?</h1>
+              <p class="mt-6 text-lg leading-8 text-gray-400 text-center sm:text-3xl">
+                The simple way to share your nostr identity
+                <br>
+                <span class="text-"></span>
+              </p>
 
               <div class="my-3 md:my-10">
-                <div class="relative mt-1 rounded-md shadow-sm">
-                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <span class="text-gray-300 sm:text-3xl">gotnostr.com/</span>
+                <div class="relative mt-1 rounded-3xl shadow-sm">
+                  <div class="pointer-events-none absolute inset-y-0 left-4 right-4 flex items-center pl-3">
+                    <span class="text-purple-200 sm:text-3xl">gotnostr.com/</span>
                   </div>
-                  <input type="text" name="company-website" id="company-website" class="block w-full rounded-md border-gray-300 pl-16 focus:border-indigo-500 focus:ring-indigo-500 sm:pl-52 py-5 sm:text-6xl text-gray-500" placeholder="your NIP-05">
+                  <input type="text" name="company-website" id="company-website" class="block w-full rounded-3xl border-gray-300 pl-16 focus:border-indigo-500 focus:ring-indigo-500 sm:pl-60 text-center py-5 sm:text-6xl text-purple-700 fontlogo" placeholder="your NIP-05">
                 </div>
                 
                 <p class="mt-3 text-center">
