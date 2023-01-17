@@ -6,6 +6,7 @@
 
 <style lang="postcss">
     :global(html) {
+        font-family: Inter;
         background-color: theme(colors.gray.100);
     }
 
