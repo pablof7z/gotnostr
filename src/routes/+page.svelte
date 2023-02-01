@@ -48,6 +48,25 @@
     $: paid = $invoiceStatus === 'paid';
 </script>
 
+<svelte:head>
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="description" content="got nostr? memorable nostr URLs">
+    <meta name="author" content="pablof7z">
+    <meta name="theme-color" content="#f6ad55">
+    <meta name="twitter:site" content="@pablof7z">
+    <meta name="twitter:creator" content="@pablof7z">
+    <meta name="twitter:title" content="got nostr?">
+    <meta name="twitter:description" content="got nostr? your place for memorable nostr URLs">
+    <meta property="og:url" content="https://gotnostr.com/">
+    <meta property="og:title" content="gotnostr.com">
+    <meta property="og:description" content="got nostr? your place for memorable nostr URLs">
+    <meta property="og:image:alt" content="gotnostr.com">
+    <meta name="twitter:image" content="https://gotnostr.com/images/banner.png">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:site_name" content="gotnostr.com">
+</svelte:head>
+
 <div class="isolate bg-white min-h-screen items-stretch justify-between flex flex-col">
     <div class="absolute inset-x-0 top-[-10rem] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[-20rem]">
       <svg class="relative left-[calc(50%-11rem)] -z-10 h-[21.1875rem] max-w-none -translate-x-1/2 rotate-[30deg] sm:left-[calc(50%-30rem)] sm:h-[42.375rem]" viewBox="0 0 1155 678" fill="none" xmlns="http://www.w3.org/2000/svg">
