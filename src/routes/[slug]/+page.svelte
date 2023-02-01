@@ -131,6 +131,7 @@
 </script>
 
 <svelte:head>
+    <title>{cachedProfile?.display_name||slug} on Nostr</title>
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="description" content="{cachedProfile?.display_name||slug} on Nostr">
     <meta name="author" content="pablof7z">

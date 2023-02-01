@@ -49,6 +49,7 @@
 </script>
 
 <svelte:head>
+    <title>gotnostr?</title>
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="description" content="got nostr? memorable nostr URLs">
     <meta name="author" content="pablof7z">
