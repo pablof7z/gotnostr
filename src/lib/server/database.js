@@ -17,3 +17,22 @@ export async function getCustomPath(path) {
 
     return nip05;
 }
+
+export async function cacheProfile(slug, profile) {
+    const client = createClient();
+    await client.connect();
+
+    await client.HSET('profiles', slug, JSON.stringify(profile));
+    await client.disconnect();
+}
+
+export async function getProfile(slug) {
+    const client = createClient();
+    await client.connect();
+
+    const profile = await client.HGET('profiles', slug);
+    await client.disconnect();
+
+    if (!profile) return null;
+    return JSON.parse(profile);
+}

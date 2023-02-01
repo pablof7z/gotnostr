@@ -1,11 +1,12 @@
+import {cacheProfile} from '$lib/server/database';
+
 /** @type {import('./$types').RequestHandler} */
-export async function POST(req, data) {
-    // get body sent to the svelte page
-    const { slug } = req.params;
-    console.log(req.request);
-    // const body = await request.json();
-    // console.log('here1');
-    // console.log(body);
-    // console.log('here4');
+export async function POST(req) {
+    const {slug} = req.params;
+    const { profile } = await req.request.json();
+
+    console.log('will cache', {slug, profile});
+
+    await cacheProfile(slug, profile);
     return new Response();
 };

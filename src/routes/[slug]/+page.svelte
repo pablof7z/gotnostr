@@ -1,41 +1,26 @@
 <script>
-    
     import { page } from '$app/stores';
     let {slug} = $page.params;
-    const { nip05, premiumUrl } = $page.data?.props || {};
-
-    if (nip05) {
-        slug = nip05;
-    }
-    
     import { onMount } from 'svelte';
-    
+    import {relayInit} from 'nostr-tools'
+    let { nip05, premiumUrl, cachedProfile } = $page.data?.props || {};
 
-    import {generatePrivateKey, getPublicKey, relayInit, getEventHash, signEvent} from 'nostr-tools'
-
-    let privateKey = '0157ceecc36ae4e04097ff07a81e4e0ce802213f45799b3e1d1d79305e0b970b';
-
-    let myRelay;
-    let event;
+    if (!nip05) {
+        nip05 = slug;
+    }
 
     let nostrJson, pubkey;
     let relays = {}, recommendedRelays = [], relaysWithProfile = [];
     let profile = {
         picture: 'https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=8&amp;w=1024&amp;h=1024&amp;q=80',
-        banner: 'https://images.unsplash.com/photo-1444628838545-ac4016a5418a?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&amp;ixlib=rb-1.2.1&amp;auto=format&amp;fit=crop&amp;w=1950&amp;q=80'
+        banner: 'https://images.unsplash.com/photo-1444628838545-ac4016a5418a?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&amp;ixlib=rb-1.2.1&amp;auto=format&amp;fit=crop&amp;w=1950&amp;q=80',
+        ...cachedProfile
     };
-    let fullProfile = {};
+    let fullProfile = {...cachedProfile};
 
-    const { user, domain } = parseSlug(slug);
+    const { user, domain } = parseNip05(nip05);
 
     onMount(async () => {
-        myRelay = await relayInit('wss://relay.damus.io');
-        myRelay.connect();
-        myRelay.on('connect', async () => {
-            console.log('wss://relay.damus.io connected');
-        });
-        myRelay.on('error', async (e) => { console.log('wss://relay.damus.io connection failed', e) });
-
         const currentTimestamp = Math.floor(Date.now() / 1000);
         nostrJson = await fetch(`https://${domain}/.well-known/nostr.json?${currentTimestamp}`).then(r => r.json());
 
@@ -45,18 +30,21 @@
             pubkey = nostrJson.names['_'];
         }
         
-        profile.display_name = profile.name = pubkey;
+        if (!profile.display_name) profile.display_name = pubkey;
+        if (!profile.name) profile.name = pubkey;
 
         if (pubkey && nostrJson.relays && nostrJson.relays[pubkey]) {
             nostrJson.relays[pubkey].forEach(relay => {
                 relays[relay] = {
                     url: relay,
-                    status: 'connecting'
+                    status: 'connecting',
+                    noteCount: null
                 };
             })
             recommendedRelays = nostrJson.relays[pubkey];
         } else {
             // no relays found, guess a few
+            relays['wss://eden.nostr.land'] = { status: 'connecting' };
             relays['wss://brb.io'] = { status: 'connecting' };
             relays['wss://relay.damus.io'] = { status: 'connecting' };
             relays['wss://nostr-2.zebeedee.cloud'] = { status: 'connecting' };
@@ -71,7 +59,7 @@
         }
     })
 
-    function parseSlug(slug) {
+    function parseNip05(slug) {
         if (slug.match(/@/)) {
             const [user, domain ] = slug.split('@');
             return {user, domain};
@@ -80,7 +68,20 @@
         }
     }
 
+    async function recommendedRelay(event, relayUrl) {
+        const recommended = event.content
+        // recommendedRelays.push(recommended);
+        // recommendedRelays = recommendedRelays;
+        console.log('recommended relay received from', relayUrl, {recommended});
+    }
+
+    async function noteReceived(event, relayUrl) {
+        relays[relayUrl].noteCount = 1;
+        console.log('note received from', relayUrl);
+    }
+
     async function profileReceived(event, relayUrl) {
+        console.log('profile received', relayUrl);
         const p = JSON.parse(event.content);
         if (!p) { return; }
 
@@ -91,6 +92,7 @@
         }
 
         relaysWithProfile.push(relayUrl)
+        relaysWithProfile = relaysWithProfile;
 
         if (p.display_name) { profile.display_name = p.display_name; }
         if (p.name) { profile.name = p.name; }
@@ -113,8 +115,11 @@
         const relay = relayInit(relayUrl);
         relay.connect();
         relay.on('connect', async () => {
+            console.log('fetching profile', relayUrl);
             relays[relayUrl].status = 'success'
             await relay.sub([{kinds: [0], authors: [pubkey]}]).on('event', async (e) => (await profileReceived(e, relayUrl)))
+            await relay.sub([{kinds: [2], authors: [pubkey]}]).on('event', async (e) => (await recommendedRelay(e, relayUrl)))
+            // await relay.sub([{kinds: [1], authors: [pubkey]}]).on('event', async (e) => (await noteReceived(e, relayUrl)))
             await relay.sub([{authors: [pubkey]}], async (e) => {
                 console.log(e)
             })
@@ -124,6 +129,25 @@
         })
     }
 </script>
+
+<svelte:head>
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="description" content="{cachedProfile?.display_name||slug} on Nostr">
+    <meta name="author" content="pablof7z">
+    <meta name="theme-color" content="#f6ad55">
+    <meta name="twitter:site" content="@pablof7z">
+    <meta name="twitter:creator" content="@pablof7z">
+    <meta name="twitter:title" content="got nostr?">
+    <meta name="twitter:description" content="{cachedProfile?.display_name||slug} on Nostr">
+    <meta property="og:url" content="https://gotnostr.com/">
+    <meta property="og:title" content="gotnostr.com">
+    <meta property="og:description" content="{cachedProfile?.display_name||slug} on Nostr">
+    <meta property="og:image:alt" content="gotnostr.com">
+    <meta name="twitter:image" content="{cachedProfile?.picture}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:site_name" content="gotnostr.com">
+</svelte:head>
 
 <div class="flex min-h-full flex-col justify-center sm:px-6 lg:px-8">
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-3xl">
@@ -191,10 +215,17 @@
                                     <span class="">❌</span>
                                 {/if}
                                 {relay}
+
+                                {#if relays[relay].noteCount}
+                                    <span class="text-gray-500">
+                                        ({relays[relay].noteCount} notes)
+                                    </span>
+                                {/if}
                             </li>
                         {/each}
                     </ul>
                 {:else}
+                    {relaysWithProfile.length}
                     {#if relaysWithProfile && relaysWithProfile.length > 0}
                         <h4 class="mt-3">
                             These relays have a profile for this user:

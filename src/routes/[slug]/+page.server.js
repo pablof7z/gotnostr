@@ -1,20 +1,20 @@
-import { error } from '@sveltejs/kit';
-import {getCustomPath} from '$lib/server/database';
+import {getCustomPath, getProfile} from '$lib/server/database';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load(req) {
     const {slug} = req.params;
+    let props = {}
 
     const nip05 = await getCustomPath(slug);
+    const cachedProfile = await getProfile(slug);
+    if (cachedProfile) {
+        props.cachedProfile = cachedProfile;
+    }
 
     if (nip05) {
-        return {
-            props: {
-                nip05,
-                premiumUrl: true
-            }
-        };
-    } else {
-        return {};
+        props.nip05 = nip05;
+        props.premiumUrl = true;
     }
+
+    return { props };
 };

@@ -1,5 +1,5 @@
 import Ajv from 'ajv';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import {createCustomPath} from '$lib/server/database';
 
 /** @type {import('./$types').PageServerLoad} */
@@ -63,11 +63,10 @@ export const actions = {
         // }
 
         try {
-            console.log('here3');
+            console.log('will create');
             await createCustomPath(path, nip05)
-            console.log('here4');
+            return { success: true, path };
         } catch (e) {
-            console.log('here2', e);
             return fail(422, {error: e});
         }
     }
