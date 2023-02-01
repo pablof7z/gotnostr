@@ -17,7 +17,7 @@
 
   let nip05;
 
-  const price = 1;
+  const price = 15000;
   let invoice;
   let paid = false;
   let checkInterval;
