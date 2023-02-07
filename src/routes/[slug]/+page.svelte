@@ -2,8 +2,9 @@
     import { page } from '$app/stores';
     let {slug} = $page.params;
     import { onMount } from 'svelte';
-    import {relayInit} from 'nostr-tools'
+    import {nip19, relayInit} from 'nostr-tools'
     let { nip05, premiumUrl, cachedProfile } = $page.data?.props || {};
+    import { goto } from '$app/navigation';
 
     if (!nip05) {
         nip05 = slug;
@@ -17,6 +18,7 @@
         ...cachedProfile
     };
     let fullProfile = {...cachedProfile};
+    let bech32profile;
 
     const { user, domain } = parseNip05(nip05);
 
@@ -25,6 +27,7 @@
         nostrJson = await fetch(`https://${domain}/.well-known/nostr.json?${currentTimestamp}`).then(r => r.json());
 
         pubkey = nostrJson.names[user];
+        bech32profile = nip19.npubEncode(pubkey);
 
         if (!pubkey) {
             pubkey = nostrJson.names['_'];
@@ -150,8 +153,8 @@
     <meta property="og:site_name" content="gotnostr.com">
 </svelte:head>
 
-<div class="flex min-h-full flex-col justify-center sm:px-6 lg:px-8">
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-3xl">
+<div class="flex min-h-full flex-col justify-center sm:px-6 lg:px-8 w-full">
+    <div class="mt-8 sm:mx-auto w-full sm:max-w-3xl">
       <div class="bg-white shadow sm:rounded-lg">
         <article class="p-0 pb-7">
             <!-- Profile header -->
@@ -196,58 +199,105 @@
             {/if}
 
             <div class="mx-auto mt-6 max-w-5xl px-4 sm:px-6 lg:px-8">
-                <h3 class="text-2xl mb-3 font-bold text-gray-600">Suggested Relays</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2">
+                    <div class="">
+                        <h3 class="text-2xl mb-3 font-bold text-gray-600">Suggested Relays</h3>
 
-                {#if recommendedRelays && recommendedRelays.length === 0}
-                    <h4>
-                        This user doesn't have any relays in their NIP-05.
-                    </h4>
-                {/if}
+                        {#if recommendedRelays && recommendedRelays.length === 0}
+                            <h4>
+                                This user doesn't have any relays in their NIP-05.
+                            </h4>
+                        {/if}
 
-                {#if recommendedRelays && recommendedRelays.length > 0}
-                    <ul>
-                        {#each recommendedRelays as relay}
-                            <li class="py-1 text-gray-400">
-                                {#if relays[relay].status === 'connecting'}
-                                    <span class="animate-pulse">⏳</span>
-                                {:else if relays[relay].status === 'success'}
-                                    <span class="">✅</span>
-                                {:else if relays[relay].status === 'failed'}
-                                    <span class="">❌</span>
-                                {/if}
-                                {relay}
+                        {#if recommendedRelays && recommendedRelays.length > 0}
+                            <ul>
+                                {#each recommendedRelays as relay}
+                                    <li class="py-1 text-gray-400">
+                                        {#if relays[relay].status === 'connecting'}
+                                            <span class="animate-pulse">⏳</span>
+                                        {:else if relays[relay].status === 'success'}
+                                            <span class="">✅</span>
+                                        {:else if relays[relay].status === 'failed'}
+                                            <span class="">❌</span>
+                                        {/if}
+                                        {relay}
 
-                                {#if relays[relay].noteCount}
-                                    <span class="text-gray-500">
-                                        ({relays[relay].noteCount} notes)
+                                        {#if relays[relay].noteCount}
+                                            <span class="text-gray-500">
+                                                ({relays[relay].noteCount} notes)
+                                            </span>
+                                        {/if}
+                                    </li>
+                                {/each}
+                            </ul>
+                        {:else}
+                            {relaysWithProfile.length}
+                            {#if relaysWithProfile && relaysWithProfile.length > 0}
+                                <h4 class="mt-3">
+                                    These relays have a profile for this user:
+                                </h4>
+                            {/if}
+
+                            <ul>
+                                {#each Object.keys(relays) as relay}
+                                    <li class="py-1 text-gray-400">
+                                        {#if relays[relay].status === 'connecting'}
+                                            <span class="animate-pulse">⏳</span>
+                                        {:else if relays[relay].status === 'success'}
+                                            <span class="">✅</span>
+                                        {:else if relays[relay].status === 'failed'}
+                                            <span class="">❌</span>
+                                        {/if}
+                                        {relay}
+                                    </li>
+                                {/each}
+                            </ul>
+                        {/if}
+                    </div>
+
+
+                    <div>
+                        {#if fullProfile}
+                            {#if fullProfile.website}
+                                <div class="flex flex-col">
+                                    <span class="text-gray-600 font-semibold flex flex-row items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                                        </svg>
+                                        Website
                                     </span>
-                                {/if}
-                            </li>
-                        {/each}
-                    </ul>
-                {:else}
-                    {relaysWithProfile.length}
-                    {#if relaysWithProfile && relaysWithProfile.length > 0}
-                        <h4 class="mt-3">
-                            These relays have a profile for this user:
-                        </h4>
-                    {/if}
+                                    <a href="{fullProfile.website}" class="text-purple-800">{fullProfile.website}</a>
+                                </div>
+                            {/if}
 
-                    <ul>
-                        {#each Object.keys(relays) as relay}
-                            <li class="py-1 text-gray-400">
-                                {#if relays[relay].status === 'connecting'}
-                                    <span class="animate-pulse">⏳</span>
-                                {:else if relays[relay].status === 'success'}
-                                    <span class="">✅</span>
-                                {:else if relays[relay].status === 'failed'}
-                                    <span class="">❌</span>
-                                {/if}
-                                {relay}
-                            </li>
-                        {/each}
-                    </ul>
-                {/if}
+                            {#if fullProfile.about}
+                                <div class="flex flex-col my-10">
+                                    <div class="text-gray-500">{fullProfile.about}</div>
+                                </div>
+                            {/if}
+                        {/if}
+                    </div>
+                    
+                </div>
+
+                <div class="flex flex-row items-center justify-center my-5">
+                    <div>
+                        <a
+                            href="https://snort.social/p/{bech32profile}" class="
+                                bg-purple-800
+                                hover:bg-purple-700
+                                text-white
+                                font-light
+                                py-2
+                                md:px-10
+                                text-xl
+                                rounded-lg
+                                w-full sm:w-fit
+                            "
+                            on:click={()=>{goto(`snort:${bech32profile}`)}}
+                        >Open</a>
+                    </div>
+                </div>
             </div>
       </div>
     </div>
