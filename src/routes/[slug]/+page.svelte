@@ -5,6 +5,7 @@
     import {nip19, relayInit} from 'nostr-tools'
     let { nip05, premiumUrl, cachedProfile } = $page.data?.props || {};
     import { goto } from '$app/navigation';
+    import defaultRelays from '../../relays.js';
 
     if (!nip05) {
         nip05 = slug;
@@ -13,26 +14,40 @@
     let nostrJson, pubkey;
     let relays = {}, recommendedRelays = [], relaysWithProfile = [];
     let profile = {
-        picture: 'https://images.unsplash.com/photo-1463453091185-61582044d556?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=8&amp;w=1024&amp;h=1024&amp;q=80',
+        picture: 'https://robohash.org/1.png',
         banner: 'https://images.unsplash.com/photo-1444628838545-ac4016a5418a?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&amp;ixlib=rb-1.2.1&amp;auto=format&amp;fit=crop&amp;w=1950&amp;q=80',
         ...cachedProfile
     };
     let fullProfile = {...cachedProfile};
-    let bech32profile;
+    let npub;
 
     const { user, domain } = parseNip05(nip05);
+
+    let sortedRelays = [];
+
+    $: {
+        sortedRelays = Object.keys(relays).sort((a, b) => {
+            if (relays[a].status === 'success' && relays[b].status !== 'success') {
+                return -1;
+            } else if (relays[a].status !== 'success' && relays[b].status === 'success') {
+                return 1;
+            } else {
+                return 0;
+            }
+        })
+    }
 
     onMount(async () => {
         const currentTimestamp = Math.floor(Date.now() / 1000);
         nostrJson = await fetch(`https://${domain}/.well-known/nostr.json?${currentTimestamp}`).then(r => r.json());
 
         pubkey = nostrJson.names[user];
-        bech32profile = nip19.npubEncode(pubkey);
+        npub = nip19.npubEncode(pubkey);
 
         if (!pubkey) {
             pubkey = nostrJson.names['_'];
         }
-        
+
         if (!profile.display_name) profile.display_name = pubkey;
         if (!profile.name) profile.name = pubkey;
 
@@ -47,14 +62,9 @@
             recommendedRelays = nostrJson.relays[pubkey];
         } else {
             // no relays found, guess a few
-            relays['wss://eden.nostr.land'] = { status: 'connecting' };
-            relays['wss://brb.io'] = { status: 'connecting' };
-            relays['wss://relay.damus.io'] = { status: 'connecting' };
-            relays['wss://nostr-2.zebeedee.cloud'] = { status: 'connecting' };
-            relays['wss://nostr.coinos.io'] = { status: 'connecting' };
-            relays['wss://nostr.oxtr.dev'] = { status: 'connecting' };
-            relays['wss://nostr.rocks'] = { status: 'connecting' };
-            relays['wss://nostr.v0l.io'] = { status: 'connecting' };
+            for (let r of defaultRelays) {
+                relays[r] = { status: 'connecting' };
+            }
         }
 
         for (const relayUrl in relays) {
@@ -188,7 +198,7 @@
             <div class="bg-purple-900 text-white p-3 py-5 text-center">
                 <span class="font-extrabold">Pubkey:</span>
                 <span class="text-gray-200">
-                    {pubkey}
+                    {npub}
                 </span>
             </div>
 
@@ -202,12 +212,6 @@
                 <div class="grid grid-cols-1 md:grid-cols-2">
                     <div class="">
                         <h3 class="text-2xl mb-3 font-bold text-gray-600">Suggested Relays</h3>
-
-                        {#if recommendedRelays && recommendedRelays.length === 0}
-                            <h4>
-                                This user doesn't have any relays in their NIP-05.
-                            </h4>
-                        {/if}
 
                         {#if recommendedRelays && recommendedRelays.length > 0}
                             <ul>
@@ -231,7 +235,6 @@
                                 {/each}
                             </ul>
                         {:else}
-                            {relaysWithProfile.length}
                             {#if relaysWithProfile && relaysWithProfile.length > 0}
                                 <h4 class="mt-3">
                                     These relays have a profile for this user:
@@ -239,7 +242,7 @@
                             {/if}
 
                             <ul>
-                                {#each Object.keys(relays) as relay}
+                                {#each sortedRelays as relay}
                                     <li class="py-1 text-gray-400">
                                         {#if relays[relay].status === 'connecting'}
                                             <span class="animate-pulse">⏳</span>
@@ -277,13 +280,13 @@
                             {/if}
                         {/if}
                     </div>
-                    
+
                 </div>
 
                 <div class="flex flex-row items-center justify-center my-5">
                     <div>
                         <a
-                            href="https://snort.social/p/{bech32profile}" class="
+                            href="https://snort.social/p/{npub}" class="
                                 bg-purple-800
                                 hover:bg-purple-700
                                 text-white
@@ -294,7 +297,7 @@
                                 rounded-lg
                                 w-full sm:w-fit
                             "
-                            on:click={()=>{goto(`snort:${bech32profile}`)}}
+                            on:click={()=>{goto(`snort:${npub}`)}}
                         >Open</a>
                     </div>
                 </div>

@@ -1,13 +1,42 @@
 const defaultRelays = [
     'wss://relay.damus.io',
-]
-//     'wss://nostr.coinos.io'
-// ]
-//     'wss://brb.io',
-//     'wss://nostr-2.zebeedee.cloud',
-//     'wss://nostr.oxtr.dev',
-//     'wss://nostr.rocks',
-//     'wss://nostr.v0l.io'
-// ]
+    'wss://purplepag.es',
+    'wss://relay.snort.social',
+    'wss://nostramsterdam.vpx.moe',
+    'wss://relay.n057r.club',
+    'wss://nostr.anchel.nl',
+    'wss://nostr.sidnlabs.nl',
+    'wss://nostr.wine',
+    'wss://relay.nostr.info	',
+    'wss://nostr.lu.ke	',
+    'wss://relay.valera.co',
+    'wss://nostr.naut.social	',
+    'wss://nostr-pub.wellorder.net',
+    'wss://nos.lol',
+    'wss://nostr-relay.xbytez.io',
+    'wss://pow.nostrati.com	',
+    'wss://relay.wellorder.net',
+    'wss://relay.austrich.net',
+    'wss://private.red.gb.net',
+    'wss://public.nostr.swissrouting.com',
+    'wss://relay.snort.social',
+    'wss://nostr.delo.software	',
+    'wss://relay.nostr.nu	',
+    'wss://nostr.8e23.net',
+    'wss://nostr.sebastix.dev	',
+    'wss://relay.nostrified.org',
+    'wss://spore.ws',
+    'wss://relay.nostrview.com',
+    'wss://nostr.gromeul.eu',
+    'wss://nostr-rs-relay.cryptoassetssubledger.com',
+    'wss://xmr.usenostr.org	',
+    'wss://nostr.massmux.com',
+    'wss://rsslay.nostr.net	',
+    'wss://relay.plebstr.com	',
+    'wss://nostr.yuv.al',
+    'wss://nostr.data.haus',
+    'wss://nostr.monostr.com',
+    'wss://nostr.blockchaincaffe.it',
+];
 
 export default defaultRelays

@@ -3,10 +3,9 @@ import LNBits from 'lnbits'; // using import
 function getWallet () {
     return LNBits({
         adminKey: "",
-        invoiceReadKey: 'cdb4e66603b84a44a24de5266da01452',
-        endpoint: 'https://lnbits.f7z.io'
+        invoiceReadKey: '1b68362815324e63bcf708174f7d0851',
+        endpoint: 'https://legend.lnbits.com'
     });
-
 }
 
 export async function createInvoice(amount) {
@@ -41,7 +40,7 @@ export function formatSatoshis(sats, {tryThousands} = {}) {
     if (tryThousands && sats >= 1000) {
         sats = sats/1000;
     }
-    
+
     let v = sats.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
     if (v.indexOf(" ") > -1) {
